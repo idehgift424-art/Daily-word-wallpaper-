@@ -28,6 +28,30 @@ jobs:
       - name: Extract Android project
         run: unzip -q DailyWordWallpaper-source.zip
 
+      - name: Fix wallpaper description
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          base = Path("DailyWordWallpaper/app/src/main/res")
+
+          xml = base / "xml/wallpaper.xml"
+          content = xml.read_text()
+          content = content.replace(
+              'android:description="Scripture-inspired wallpapers that refresh throughout your day"',
+              'android:description="@string/wallpaper_description"'
+          )
+          xml.write_text(content)
+
+          strings = base / "values/strings.xml"
+          content = strings.read_text()
+          content = content.replace(
+              '</resources>',
+              '    <string name="wallpaper_description">Scripture-inspired wallpapers that refresh throughout your day</string>\n</resources>'
+          )
+          strings.write_text(content)
+          PY
+
       - name: Build APK
         working-directory: DailyWordWallpaper
         run: gradle --no-daemon assembleDebug
